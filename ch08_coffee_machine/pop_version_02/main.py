@@ -1,5 +1,3 @@
-from ch04_functions.main import drink_price
-
 MENU = {
     '에스프레소': {
         '재료': {
@@ -34,7 +32,14 @@ resources = {
     '커피': 100,
 }
 
-def is_resources_enough(order_ingredient): # 만약 특정 함수/메서드 결과값이 boolean이라면 대개 다음 조건문 / 반복문의 조건식으로 쓰이는 경우가 많다. 함수형 프로그래밍
+logo = '''              _____  _____              
+  ____  _____/ ____\/ ____\____   ____  
+_/ ___\/  _ \   __\\   __\/ __ \_/ __ \ 
+\  \__(  <_> )  |   |  | \  ___/\  ___/ 
+ \___  >____/|__|   |__|  \___  >\___  >
+     \/                       \/     \/ '''
+
+def is_resources_enough(order_ingredient):
     """
     DocString : 홤수 / 클래스 / 메서드가 어떤 동작을 하는지 '사람들에게' 설명해주는 기능.
     주문 받은 음료를 resources에서 재료 차감을 한 뒤, 음료 만들기가 가능하면 True 반환, 아니면 False
@@ -49,13 +54,6 @@ def is_resources_enough(order_ingredient): # 만약 특정 함수/메서드 결�
 
 def process_coins():
     """동전들을 입력받아 전체 금액을 반환하는 함수 call3()유형"""
-    # 쿼터, 다임, 니켈, 페니 네 종류의 동전
-    '''
-    쿼터 = 0.25 달러 quarter
-    다임 = 0.1 달러 dime
-    니켈 = 0.05 달러 nickel
-    페니 = 0.01 달러 penny
-    '''
     coin_sum = 0
     quarter = float(input('쿼터 동전을 몇개나 넣으시겠습니까? >>> ')) * 0.25
     dime = float(input('쿼터 동전을 몇개나 넣으시겠습니까? >>> ')) * 0.1
@@ -64,19 +62,18 @@ def process_coins():
     coin_sum = quarter + dime + nickel + penny
     return coin_sum
 
-# todo - 5 : 왜 동전 처리 함수를 정의했는지 이해해야한다. 해당 총합을 가지고, 총합이 '선택한' 음료 가격보다 높다면 다음 과정으로 넘어갈 필요가 있다.
 def is_transaction_successful(money_received, drink_cost):
     """process_coins()의 결과값이 음료 가격을 매개변수로 받아 받은 동전의 총합이 음료 가격보다 높으면 True 아니면 False 를 반환. True인 경우 profit에 음료 가격만큼 추가해줘야 하고 False인 경우 받은 동전들을 반환해주는 안내문 출력."""
     change = money_received - drink_cost
     if change >= 0:
-        # 음료 제조 과정으로 넘아가는 조건. profit에도 추가해야함
-        global profit # 전역변수인 profit을 함수 내부에서 사용하기 위한 키워드
-        profit += drink_cost # 하지만 함수 호출을 통한 전역 변수의 값 변화는 권장하지 않는다.
+
+        global profit
+        profit += drink_cost
         print(f'잔돈 ${change}을(를) 반환합니다.')
-        return True # 이래야 음료 제조 과정의 조건식으로 쓸 수 있다.
+        return True
     else:
         print(f'금액이 충분하지 않습니다. ${money_received}를 반환합니다.')
-        return False # 음료 제조 과정의 조건식으로 쓰이더라도 실행안됨
+        return False
 
 def make_coffee(drink_name, order_ingredient):
     """
@@ -86,40 +83,31 @@ def make_coffee(drink_name, order_ingredient):
     :param order_ingredient: dict
     :return: none -> call2()유형으로 작성
     """
-    for item in order_ingredient: # resources가 아니라 order_ingredient를 반복문 돌리는 이유는 에소프레소일 때 오류가 발생하기 때문이다. 에소프레소의 재료에는 우유가 없는데 resources에는 있는 상태다. 그래서 order_ingredient
+    for item in order_ingredient:
         resources[item] -= order_ingredient[item]
     print(f'{drink_name}이(가) 나왔습니다. 맛있게 드세요!!')
 
-# todo -1 : 커피 머신이 반복적으로 돌아가야하는데, off를 입력받으면 종료해야한다.
-
-# 관련 변수 선언 및 초기화
 is_on = True
+
+print(logo)
 
 while is_on:
     choice = input('어떤 음료를 드시겠습니까? (에소프레소 / 라떼 / 카푸치노) >>> ')
     if choice == 'off':
         is_on = False
         print('자판기가 종료되었습니다.')
-# todo - 2 : 사용자가 프롬프트에 "report"를 입력하면 현재 자원 값을 보여주는 보고서를 생성
+
     elif choice == 'report':
         print(f'물 : {resources['물']}ml')
         print(f'우유 : {resources['우유']}ml')
         print(f'커피 : {resources['커피']}g')
         print(f'돈 : ${profit}')
-# todo - 3 : choice == 에스프레소 / 라떼 / 카푸치노 중 하나일 때 작성하는 부분
+
     elif choice in ('에스프레소', '라떼', '카푸치노'):
-        if is_resources_enough(MENU[choice]['재료']):
-            # 이상의 조건식이 True라면 동전 처리해야함
+        drink = MENU[choice] # 세 번 나와서 리팩토링
+        if is_resources_enough(drink['재료']):
             money_received = process_coins()
-            # 여기의 money_received는 전역변수이다. 그리고 process_coins()의 결과값을 변수에 담았다.
-            if is_transaction_successful(money_received=money_received, drink_cost=MENU[choice]['가격']):
-                # 이제 여기에 음료 제조 과정을 작성하면 된다.
-                # 이제 재료를 실질적으로 차감하고 음료를 만들어서 사용자에게 제공해야한다.
-                # 재료차감 파트를 is_resources_enough()함수를 참조하여 여기서 작성
-                make_coffee(drink_name= choice, order_ingredient=MENU[choice]['재료'])
-
-
-
-# todo - 4 : choice가 이상의 조건을 충족하지 않았을 때 '잘못 입력하셨습니다. 다시 입력하세요'를 출력
+            if is_transaction_successful(money_received=money_received, drink_cost=drink['가격']):
+                make_coffee(drink_name= choice, order_ingredient=drink['재료'])
     else:
         print('잘못 입력하셨습니다. 다시 입력하세요.')
